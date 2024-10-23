@@ -1,4 +1,4 @@
-# TradeX---AI-Driven-Crypto-Trading-System
+# TradeX---AI-Driven-Crypto-Trading-System ( This project done at Google Collabration)
 
 The TradeX - AI-Driven Crypto Trading System is a cutting-edge cryptocurrency trading platform that leverages advanced AI models, machine learning algorithms, and technical analysis to forecast market movements, generate trading strategies, and execute trades automatically. This system integrates LSTM neural networks, ensemble learning models, AI-generated strategies, and sentiment analysis to provide accurate predictions and improve decision-making for cryptocurrency trading.
 
@@ -33,3 +33,14 @@ Results
 Backtesting: The backtesting results show how the strategy performs over time, compared to the market.
 Model Performance: The LSTM and ensemble models are evaluated and plotted to show their prediction accuracy.
 AI Strategy: The AI-generated strategy undergoes several refinement rounds before determining whether to place a trade.
+
+"" !pip install numpy==1.24.3 pandas==2.0.3 torch==2.0.1 transformers==4.31.0 \
+scikit-learn==1.3.0 scipy==1.11.2 matplotlib==3.7.2 requests==2.31.0 \
+yfinance==0.2.28 ccxt alpaca-trade-api prophet==1.1.4 \
+statsmodels==0.14.0 pmdarima==2.0.3 nltk==3.8.1 beautifulsoup4==4.12.2 \
+optuna==3.2.0 mlflow psycopg2-binary==2.9.7 joblib==1.3.2 tqdm==4.65.0 \
+python-dateutil==2.8.2 pytz==2023.3 six==1.16.0 urllib3==2.0.4 certifi==2023.7.22 \
+chardet==5.2.0 idna==3.4 PyYAML==6.0.1 cloudpickle==2.2.1 cycler==0.11.0 \
+kiwisolver==1.4.4 pyparsing==3.0.9 typing-extensions==4.7.1 Pillow==10.0.0 ta==0.10.2 \
+mplfinance
+""
