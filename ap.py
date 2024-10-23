@@ -19,6 +19,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LassoCV
 from torch.utils.data import Dataset, DataLoader
 from torch import nn, optim
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from ta.volatility import BollingerBands, AverageTrueRange
 from ta.momentum import (
     RSIIndicator, StochasticOscillator, AwesomeOscillatorIndicator
@@ -67,7 +68,7 @@ logger.info(f"Using device: {device}")
 # Configuration
 CONFIG = {
     'data': {
-        'symbols': ['BTC-USD', 'ETH-USD', 'ADA-USD'],  # Include altcoins
+        'symbols': ['BTC-USD', 'ETH-USD', 'ADA-USD', 'SOL-USD'],  # Include SOL for Solana tokens
         'start_date': '2017-01-01',
         'end_date': datetime.datetime.now().strftime('%Y-%m-%d'),
         'sequence_length': 60,
@@ -95,9 +96,23 @@ CONFIG = {
         'num_rounds': 3
     },
     'alpaca': {
-        'api_key': 'YOUR ALPACA API KEY',  # Replace with your Alpaca API Key
-        'secret_key': 'YOUR ALPACA SECRET KEY',  # Replace with your Alpaca Secret Key
+        'api_key': 'PKH7N1GKX2SYR2XW1C23',  # Replace with your Alpaca API Key
+        'secret_key': 'wiupUBZWzZrblevNttAQcdcQfRstEf2QKcPF3weg',  # Replace with your Alpaca Secret Key
         'base_url': 'https://paper-api.alpaca.markets'
+    },
+    'birdeye': {
+        'api_key': 'c62a9f5c66814a2fb9a93bad4c2bc63a',  # Replace with your Birdeye API Key
+        'base_url': 'https://public-api.birdeye.so',
+        'timeout': 30
+    },
+    'trajectory_transformer': {
+        'n_layers': 6,
+        'n_head': 8,
+        'd_model': 512,
+        'sequence_length': 60,
+        'learning_rate': 1e-4,
+        'batch_size': 64,
+        'epochs': 50
     }
 }
 
@@ -197,6 +212,60 @@ def handle_missing_data(df):
     logger.debug("Missing data handled in DataFrame.")
     return df
 
+class BirdeyeDataCollector:
+    """Collect and process data from Birdeye API."""
+    def __init__(self, api_key):
+        self.api_key = api_key
+        self.base_url = CONFIG['birdeye']['base_url']
+        self.timeout = CONFIG['birdeye']['timeout']
+        self.headers = {
+            'accept': 'application/json',
+            'Authorization': f'Bearer {self.api_key}'
+        }
+    
+    def get_token_data(self, symbol):
+        """Fetch token data from Birdeye API."""
+        try:
+            token_address = self.get_token_address(symbol)
+            if token_address:
+                url = f"{self.base_url}/public/token/{token_address}"
+                response = requests.get(url, headers=self.headers, timeout=self.timeout)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    logger.error(f"Error fetching token data: {response.status_code}")
+            else:
+                logger.error(f"Token address not found for symbol: {symbol}")
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching Birdeye token data: {e}")
+            return None
+    
+    def get_market_depth(self, symbol):
+        """Fetch market depth data from Birdeye API."""
+        try:
+            token_address = self.get_token_address(symbol)
+            if token_address:
+                url = f"{self.base_url}/public/market-depth/{token_address}"
+                response = requests.get(url, headers=self.headers, timeout=self.timeout)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    logger.error(f"Error fetching market depth: {response.status_code}")
+            else:
+                logger.error(f"Token address not found for symbol: {symbol}")
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching Birdeye market depth: {e}")
+            return None
+    
+    def get_token_address(self, symbol):
+        """Map symbol to token address."""
+        symbol_to_address = {
+            'SOL-USD': '0x570A5D26f7765Ecb712C0924E4De545B89fD43dF'  # Example token address for SOL
+        }
+        return symbol_to_address.get(symbol, None)
+
 def preprocess_lstm_data(df, sequence_length=60):
     """Preprocess data for LSTM model."""
     features = [
@@ -205,6 +274,9 @@ def preprocess_lstm_data(df, sequence_length=60):
         'stochastic_oscillator', 'atr', 'adx', 'cci', 'ao',
         'tenkan_sen', 'kijun_sen', 'senkou_span_a', 'senkou_span_b', 'chikou_span'
     ]
+    # Include Birdeye data if available
+    if 'birdeye_price' in df.columns:
+        features.extend(['birdeye_price', 'bid_depth', 'ask_depth', 'market_spread'])
     scaler = MinMaxScaler()
     scaled_data = scaler.fit_transform(df[features])
     X, y = [], []
@@ -328,19 +400,16 @@ def plot_candlestick_with_ichimoku(df, symbol):
         mpf.make_addplot(df_ichimoku['senkou_span_b'], color='red', width=1)
     ]
 
-    # Plot configuration
-    kwargs = dict(
+    mpf.plot(
+        df_ichimoku,
         type='candle',
         style='charles',
         title=f'{symbol} Price Chart with Ichimoku Cloud',
         addplot=apds,
-        figsize=(12, 8),
         volume=True,
-        panel_ratios=(4, 1),
+        figsize=(12, 8),
         savefig=f'ichimoku_{symbol.replace("-", "_")}.png'
     )
-
-    mpf.plot(df_ichimoku, **kwargs)
     logger.debug(f"Ichimoku chart plotted for {symbol}.")
 
 def plot_model_comparisons(actuals, lstm_preds, ensemble_preds, symbol):
@@ -615,6 +684,62 @@ def place_trade(symbol, quantity, side):
         logger.error(f"Error placing trade: {e}")
         return None
 
+class TrajectoryTransformerModel(nn.Module):
+    """Trajectory Transformer for time series prediction."""
+    def __init__(self, input_dim, d_model, nhead, num_layers, dropout=0.1):
+        super().__init__()
+        self.input_projection = nn.Linear(input_dim, d_model)
+        encoder_layer = TransformerEncoderLayer(d_model=d_model, nhead=nhead, dim_feedforward=d_model*4, dropout=dropout)
+        self.transformer_encoder = TransformerEncoder(encoder_layer, num_layers=num_layers)
+        self.output_projection = nn.Linear(d_model, 1)
+    
+    def forward(self, src):
+        # src shape: [batch_size, seq_len, input_dim]
+        src = self.input_projection(src)  # [batch_size, seq_len, d_model]
+        src = src.permute(1, 0, 2)  # [seq_len, batch_size, d_model]
+        output = self.transformer_encoder(src)  # [seq_len, batch_size, d_model]
+        output = self.output_projection(output[-1])  # [batch_size, 1]
+        return output.squeeze()
+
+def train_trajectory_transformer(model, train_loader, val_loader):
+    """Train the Trajectory Transformer model."""
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=CONFIG['trajectory_transformer']['learning_rate'])
+    best_val_loss = float('inf')
+    patience_counter = 0
+    for epoch in range(CONFIG['trajectory_transformer']['epochs']):
+        model.train()
+        total_loss = 0
+        for X_batch, y_batch in train_loader:
+            optimizer.zero_grad()
+            outputs = model(X_batch)
+            loss = criterion(outputs, y_batch)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        avg_train_loss = total_loss / len(train_loader)
+        model.eval()
+        val_loss = 0
+        with torch.no_grad():
+            for X_batch, y_batch in val_loader:
+                outputs = model(X_batch)
+                loss = criterion(outputs, y_batch)
+                val_loss += loss.item()
+        avg_val_loss = val_loss / len(val_loader)
+        logger.info(f"Trajectory Transformer Epoch {epoch+1}, Train Loss: {avg_train_loss:.6f}, Val Loss: {avg_val_loss:.6f}")
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            patience_counter = 0
+            torch.save(model.state_dict(), 'best_trajectory_model.pth')
+        else:
+            patience_counter += 1
+            if patience_counter >= 10:
+                logger.info("Early stopping Trajectory Transformer")
+                break
+    model.load_state_dict(torch.load('best_trajectory_model.pth'))
+    logger.debug("Trajectory Transformer training completed.")
+    return model
+
 def main():
     # Load models and tokenizers
     gpt_tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-neo-125M')
@@ -632,6 +757,8 @@ def main():
     finbert_tokenizer = AutoTokenizer.from_pretrained('yiyanghkust/finbert-tone')
     # Fine-tune DistilBERT
     fine_tune_distilbert(distilbert_model, distilbert_tokenizer)
+    # Initialize Birdeye data collector
+    birdeye_collector = BirdeyeDataCollector(CONFIG['birdeye']['api_key'])
     # Process each symbol (including altcoins)
     for symbol in CONFIG['data']['symbols']:
         logger.info(f"Processing symbol: {symbol}")
@@ -644,6 +771,15 @@ def main():
         # Add technical indicators
         df = add_technical_indicators(df)
         df = handle_missing_data(df)
+        # Collect Birdeye data
+        if 'SOL' in symbol:  # Only for Solana tokens
+            token_data = birdeye_collector.get_token_data(symbol)
+            market_depth = birdeye_collector.get_market_depth(symbol)
+            if token_data and market_depth:
+                df['birdeye_price'] = float(token_data.get('price', 0))
+                df['bid_depth'] = sum([float(bid['size']) for bid in market_depth.get('bids', [])])
+                df['ask_depth'] = sum([float(ask['size']) for ask in market_depth.get('asks', [])])
+                df['market_spread'] = float(market_depth['asks'][0]['price']) - float(market_depth['bids'][0]['price'])
         # Preprocess data
         X_train, X_val, y_train, y_val, scaler = preprocess_lstm_data(
             df, sequence_length=CONFIG['data']['sequence_length']
@@ -664,6 +800,16 @@ def main():
         # Evaluate LSTM model
         mse_lstm, mae_lstm, lstm_predictions, actuals = evaluate_model(lstm_model, val_loader)
         logger.info(f"LSTM Evaluation for {symbol} - MSE: {mse_lstm:.6f}, MAE: {mae_lstm:.6f}")
+        # Initialize and train Trajectory Transformer
+        trajectory_model = TrajectoryTransformerModel(
+            input_dim=X_train.shape[2],
+            d_model=CONFIG['trajectory_transformer']['d_model'],
+            nhead=CONFIG['trajectory_transformer']['n_head'],
+            num_layers=CONFIG['trajectory_transformer']['n_layers']
+        ).to(device)
+        trajectory_model = train_trajectory_transformer(trajectory_model, train_loader, val_loader)
+        mse_traj, mae_traj, traj_predictions, _ = evaluate_model(trajectory_model, val_loader)
+        logger.info(f"Trajectory Transformer Evaluation for {symbol} - MSE: {mse_traj:.6f}, MAE: {mae_traj:.6f}")
         # Initialize and train ensemble model
         ensemble_model = ModelEnsemble(lstm_model)
         ensemble_model.fit(X_train, y_train)
@@ -683,6 +829,8 @@ def main():
             'stochastic_oscillator', 'atr', 'adx', 'cci', 'ao',
             'tenkan_sen', 'kijun_sen', 'senkou_span_a', 'senkou_span_b', 'chikou_span'
         ]
+        if 'birdeye_price' in df.columns:
+            features.extend(['birdeye_price', 'bid_depth', 'ask_depth', 'market_spread'])
         plot_feature_correlation(df, features)
         # Use Prophet for forecasting
         prophet_model = ProphetModel(
@@ -757,6 +905,7 @@ def main():
             'final_strategy': strategy,
             'strategy_sentiment': {'sentiment': sentiment, 'confidence': confidence},
             'lstm_metrics': {'mse': f"{mse_lstm:.8f}", 'mae': f"{mae_lstm:.8f}"},
+            'trajectory_metrics': {'mse': f"{mse_traj:.8f}", 'mae': f"{mae_traj:.8f}"},
             'ensemble_metrics': {'mse': f"{mse_ensemble:.8f}", 'mae': f"{mae_ensemble:.8f}"},
             'cumulative_return': cumulative_return,
             'forecast': forecast.tail(5).to_dict(orient='records')
@@ -768,3 +917,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

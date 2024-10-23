@@ -1,0 +1,97 @@
+{
+    "timestamp": "2024-10-23T13:38:45.851270",
+    "symbol": "ETH-USD",
+    "market_summary": "\n        Symbol: ETH-USD\n        Date: 2024-10-22\n        Close Price: $2620.20\n        RSI: 55.19\n        MACD: 46.76\n        Bollinger Bands: High $2753.91, Low $2284.83\n        LSTM Prediction: $2703.41\n        Ensemble Prediction: $2673.90\n        Prophet Forecast: $3310.60\n        \nNews Sentiment: {'Neutral': 0.5, 'Positive': 0.5}",
+    "news_sentiment": {
+        "Neutral": 0.5,
+        "Positive": 0.5
+    },
+    "conversation_history": [
+        {
+            "speaker": "LLM",
+            "content": "Based on the following market summary, suggest a detailed trading strategy with clear entry and exit points, risk management techniques, and indicators to monitor:\n\n\n        Symbol: ETH-USD\n        Date: 2024-10-22\n        Close Price: $2620.20\n        RSI: 55.19\n        MACD: 46.76\n        Bollinger Bands: High $2753.91, Low $2284.83\n        LSTM Prediction: $2703.41\n        Ensemble Prediction: $2673.90\n        Prophet Forecast: $3310.60\n        \nNews Sentiment: {'Neutral': 0.5, 'Positive': 0.5}\n\nThe following are the market results for the first time:\n{'N': 'N', 'P': 1.0,  'R': 2.2, }\n[1] 0  0 0 1  1 0\n"
+        },
+        {
+            "speaker": "DistilBERT",
+            "content": "Sentiment: Positive, Confidence: 0.37"
+        },
+        {
+            "speaker": "Feedback",
+            "content": "Note: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights."
+        },
+        {
+            "speaker": "LLM",
+            "content": "Based on the following market summary, suggest a detailed trading strategy with clear entry and exit points, risk management techniques, and indicators to monitor:\n\n\n        Symbol: ETH-USD\n        Date: 2024-10-22\n        Close Price: $2620.20\n        RSI: 55.19\n        MACD: 46.76\n        Bollinger Bands: High $2753.91, Low $2284.83\n        LSTM Prediction: $2703.41\n        Ensemble Prediction: $2673.90\n        Prophet Forecast: $3310.60\n        \nNews Sentiment: {'Neutral': 0.5, 'Positive': 0.5}\nNote: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights.\n\nThe following table shows the market sentiment of the top 10 stocks of 2019. The table also shows how the sentiment is affected by the trading strategies.\n\n  Stock  |  Price  (USD)  (%)  Stocks \n\n 0  0-0  1  2  3  4  5  6  7  8  9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100  101  102  103  104  105  106  107  108  109  110  111  112  113  114  115  116  117  118  119  120  121  122  123  124  125  126  127  128  129  130  131  132  133  134  135  136  137  138  139  140  141  142  143  144  145  146  147  148  149  150  151  152  153  154  155  156  157  158  159  160  161  162  163  164  165  166  167  168  169  170  171  172  173  174  175  176  177  178  179  180  181  182  183  184  185  186  187  188  189  190  191  192  193  194  195  196  197  198  199  200  201  202  203  204  205  206  207  208  209  210  211  212  213  214  215  216  217  218  219  220  221  222  223  224  225  226  227  228  229  230  231  232  233  234  235  236  237  238  239  240  241  242  243  244  245  246  247  248  249  250  251  252  253  254  255  256  257  258  259  260  261  262  263  264  265  266  267  268  269  270  271  272  273  274  275  276  277  278  279  280  281  282  283  284  285  286  287  288  289  290  291  292  293  294  295  296  297  298  299  300  301  302  303  304  305  306  307  308  309  310  311  312  313  314  315  316  317  318  319  320  321  322  323  324  325  326  327  328  329  330  331  332  333  334  335  336  337  338  339  340  341  342  343  344  345  346  347  348  349  350  351  352  353  354  355  356  357  358  359  360  361  364  365  366  367  368  369  370  371  372  373  374  375  376  377  378  379  380  383  384  385  386  387  388  389  390  392  395  396  398  399  400  401  402  403  404  405  406  407  408  409  410  411  412  413  414  416  417  419  420  421  424  425  426  427  428  429  430  435  436  440  443  444  445  455  458  460  470  480  475 elman  elb  eb\n"
+        },
+        {
+            "speaker": "DistilBERT",
+            "content": "Sentiment: Positive, Confidence: 0.37"
+        },
+        {
+            "speaker": "Feedback",
+            "content": "Note: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights."
+        },
+        {
+            "speaker": "LLM",
+            "content": "Based on the following market summary, suggest a detailed trading strategy with clear entry and exit points, risk management techniques, and indicators to monitor:\n\n\n        Symbol: ETH-USD\n        Date: 2024-10-22\n        Close Price: $2620.20\n        RSI: 55.19\n        MACD: 46.76\n        Bollinger Bands: High $2753.91, Low $2284.83\n        LSTM Prediction: $2703.41\n        Ensemble Prediction: $2673.90\n        Prophet Forecast: $3310.60\n        \nNews Sentiment: {'Neutral': 0.5, 'Positive': 0.5}\nNote: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights.\nNote: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights.\n\n  *  **The following indicators are indicators of the market's performance:**\n\n\n\n"
+        },
+        {
+            "speaker": "DistilBERT",
+            "content": "Sentiment: Positive, Confidence: 0.35"
+        },
+        {
+            "speaker": "Feedback",
+            "content": "Note: Previous strategy was Positive with confidence 0.35. Please improve it by providing more actionable insights."
+        }
+    ],
+    "final_strategy": "Based on the following market summary, suggest a detailed trading strategy with clear entry and exit points, risk management techniques, and indicators to monitor:\n\n\n        Symbol: ETH-USD\n        Date: 2024-10-22\n        Close Price: $2620.20\n        RSI: 55.19\n        MACD: 46.76\n        Bollinger Bands: High $2753.91, Low $2284.83\n        LSTM Prediction: $2703.41\n        Ensemble Prediction: $2673.90\n        Prophet Forecast: $3310.60\n        \nNews Sentiment: {'Neutral': 0.5, 'Positive': 0.5}\nNote: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights.\nNote: Previous strategy was Positive with confidence 0.37. Please improve it by providing more actionable insights.\n\n  *  **The following indicators are indicators of the market's performance:**\n\n\n\n",
+    "strategy_sentiment": {
+        "sentiment": "Positive",
+        "confidence": 0.35258960723876953
+    },
+    "lstm_metrics": {
+        "mse": "0.00034576",
+        "mae": "0.01344859"
+    },
+    "trajectory_metrics": {
+        "mse": "0.00063999",
+        "mae": "0.01958038"
+    },
+    "ensemble_metrics": {
+        "mse": "0.00017505",
+        "mae": "0.01048042"
+    },
+    "cumulative_return": 2.229744882753688,
+    "forecast": [
+        {
+            "ds": "2024-10-25 00:00:00",
+            "yhat": 3251.2881098043526,
+            "yhat_lower": 2869.6790976801663,
+            "yhat_upper": 3629.7751600059546
+        },
+        {
+            "ds": "2024-10-26 00:00:00",
+            "yhat": 3270.205056678047,
+            "yhat_lower": 2896.689686695771,
+            "yhat_upper": 3664.007896938687
+        },
+        {
+            "ds": "2024-10-27 00:00:00",
+            "yhat": 3287.2695768031413,
+            "yhat_lower": 2928.4494963126335,
+            "yhat_upper": 3689.536007153866
+        },
+        {
+            "ds": "2024-10-28 00:00:00",
+            "yhat": 3302.9278036325377,
+            "yhat_lower": 2911.717252253596,
+            "yhat_upper": 3673.5086530818994
+        },
+        {
+            "ds": "2024-10-29 00:00:00",
+            "yhat": 3310.604448878535,
+            "yhat_lower": 2934.126544160796,
+            "yhat_upper": 3703.416056058327
+        }
+    ]
+}
